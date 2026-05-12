@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react"
+import Tile from "./components/Tile"
 
 type Activity = {
   name: string,
   timeInSec: number
 }
 
-type ActivityDay = {
+export type ActivityDay = {
   date: string,
   activities: Activity[]
 }
 
 const App = () => {
   const [activityDays, setActivityDays] = useState<ActivityDay[]>()
+  const [maxActivityTime, setMaxActivityTime] = useState(0)
+
 
   useEffect(()=>{
     fetch("data.json")
@@ -19,13 +22,32 @@ const App = () => {
     .then(data => setActivityDays(data))
   },[])
 
+  useEffect(()=>{
+    if(!activityDays) return;
+
+    let maxTime = 0;
+    
+    activityDays.forEach(day => {
+      let curr = 0;
+
+      day.activities.forEach(activity => {
+        curr += activity.timeInSec
+      })
+
+      if(curr > maxTime)
+        {maxTime = curr;}
+    })
+    setMaxActivityTime(maxTime);
+  },[activityDays])
+
   return (
     <>
+    <h1>{maxActivityTime}</h1>
     {
       activityDays ?
-      <div>
-        {activityDays.map(day => <div>{day.date}</div>)}
-      </div> :
+      <section className="tileWrapper">
+        {activityDays.map(day => <Tile day={day} maxTime={maxActivityTime} />)}
+      </section> :
       <div>Loading...</div>
     }
     </>
